@@ -22,6 +22,8 @@ import copy
 import json
 from classes import Emitter, Particle
 from calculations import calculate_odeint, calculate_verle, calculate_verle_threads, calculate_verle_cython
+from verle_processes import calculate_verle_processes
+from multiprocessing import freeze_support
 
 U_MAX = 100
 U_MIN = -100
@@ -226,6 +228,8 @@ class Application(Frame):
 
         submenu.add_command(label="верле_thread", command=(lambda: self.onMethod(calculate_verle_threads)))
         submenu.add_command(label="верле_cython", command=(lambda: self.onMethod(calculate_verle_cython)))
+        submenu.add_command(label="верле_processes", command=(lambda: self.onMethod(calculate_verle_processes)))
+
         fileMenu.add_cascade(label='Метод', menu=submenu, underline=0)
 
         fileMenu.add_separator()
@@ -1159,12 +1163,12 @@ class Application(Frame):
         #                                                            x_y_canvas_height / 2 - 1)
 
 
-def main():
+
+
+
+if __name__== '__main__':
+    freeze_support()
     root = Tk()
     app = Application(root)
     root.update_idletasks()
     root.mainloop()
-
-
-if __name__== '__main__':
-    main()
