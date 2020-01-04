@@ -158,12 +158,14 @@ def verle_uv_thread_cython(all_particles, t_number, a_prev, i, delta_t):
 
 def calculate_verle_threads(particles, t_, delta_t):
     t = np.linspace(0, t_, t_ / delta_t + 1)
-    all_particles = [copy.deepcopy(particles) for t_ in range(2)]
+    all_particles = [copy.deepcopy(particles) for t_ in t]
     a = np.zeros((len(particles), 2))
     for k, tk in enumerate(t):
+        if k == len(t)-1:
+            break
         threads = []
         for i, p in enumerate(particles):
-            threads.append(Thread(target=verle_xy_thread, args=(all_particles, k, a, i, delta_t)))
+            threads.append(Thread(target=verle_xy_thread, args=(all_particles[k:k+2], k, a, i, delta_t)))
         for i, p in enumerate(particles):
             threads[i].start()
         for i, p in enumerate(particles):
@@ -171,12 +173,12 @@ def calculate_verle_threads(particles, t_, delta_t):
 
         threads = []
         for i, p in enumerate(particles):
-            threads.append(Thread(target=verle_uv_thread, args=(all_particles, k, a, i, delta_t)))
+            threads.append(Thread(target=verle_uv_thread, args=(all_particles[k:k+2], k, a, i, delta_t)))
         for i, p in enumerate(particles):
             threads[i].start()
         for i, p in enumerate(particles):
             threads[i].join()
-        all_particles[0] = copy.deepcopy(all_particles[1])
+        # all_particles[0] = copy.deepcopy(all_particles[1])
     return [[{'x': p.x, 'y': p.y, 'u': p.u, 'v': p.v} for p in c] for c in all_particles]
 
 
@@ -313,16 +315,18 @@ def calculate_verle_processes(particles, t_, delta_t):
 
 def calculate_verle(particles, t_, delta_t):
     t = np.linspace(0, t_, t_ / delta_t + 1)
-    all_particles = [copy.deepcopy(particles) for t_ in range(2)]
+    all_particles = [copy.deepcopy(particles) for t_ in t]
 
     a = np.zeros((len(particles), 2))
     a_next = np.zeros((len(particles), 2))
     for k, tk in enumerate(t):
+        if k == len(t)-1:
+            break
         for i, p in enumerate(particles):
-            verle_xy_thread(all_particles, k, a, i, delta_t)
+            verle_xy_thread(all_particles[k:k+2], k, a, i, delta_t)
         for i, p in enumerate(particles):
-            verle_uv_thread(all_particles, k, a, i, delta_t)
-        all_particles[0] = copy.deepcopy(all_particles[1])
+            verle_uv_thread(all_particles[k:k+2], k, a, i, delta_t)
+        # all_particles[0] = copy.deepcopy(all_particles[1])
     return [[{'x': p.x, 'y': p.y, 'u': p.u, 'v': p.v} for p in c] for c in all_particles]
 
 # def calculate_verle(particles, t_, delta_t):
