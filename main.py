@@ -22,6 +22,7 @@ import copy
 import json
 from classes import Emitter, Particle
 from calculations import calculate_odeint, calculate_verle, calculate_verle_threads, calculate_verle_cython
+from processes_calculation import calc_to_draw
 from verle_processes import calculate_verle_processes
 from multiprocessing import freeze_support
 
@@ -228,7 +229,7 @@ class Application(Frame):
 
         submenu.add_command(label="верле_thread", command=(lambda: self.onMethod(calculate_verle_threads)))
         submenu.add_command(label="верле_cython", command=(lambda: self.onMethod(calculate_verle_cython)))
-        submenu.add_command(label="верле_processes", command=(lambda: self.onMethod(calculate_verle_processes)))
+        submenu.add_command(label="верле_processes", command=(lambda: self.onMethod(calc_to_draw)))
 
         fileMenu.add_cascade(label='Метод', menu=submenu, underline=0)
 

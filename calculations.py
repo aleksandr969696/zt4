@@ -32,7 +32,7 @@ def f_x(y0, t, masses):
 
 def calculate_odeint(particles, t_, delta_t):
     print('odeint')
-    t = np.linspace(0, t_, t_ / delta_t + 1)
+    t = np.linspace(0, t_, int(t_ / delta_t) + 1)
     y0 = []
     for p in particles:
         y0.extend(p.to_array_coords())
@@ -314,7 +314,7 @@ def calculate_verle_processes(particles, t_, delta_t):
 #     return [[{'x': p.x, 'y': p.y, 'u': p.u, 'v': p.v} for p in c] for c in all_particles]
 
 def calculate_verle(particles, t_, delta_t):
-    t = np.linspace(0, t_, t_ / delta_t + 1)
+    t = np.linspace(0, t_, int(t_ / delta_t) + 1)
     all_particles = [copy.deepcopy(particles) for t_ in t]
 
     a = np.zeros((len(particles), 2))
