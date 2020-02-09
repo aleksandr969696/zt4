@@ -211,53 +211,61 @@ def draw(t_, xes, legends):
 if __name__ == '__main__':
     # print('not here')
     from calculations import calculate_verle, calculate_verle_cython, calculate_verle_threads, calculate_odeint
+    from processes_calculation import calc_to_draw
     freeze_support()
     particles = []
-    filename = 'inputs/solar_system.json'
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    print(data)
-    print(type(data))
-    for d in data['particles'].values():
-        particles.append(Particle(int(d['x']), int(d['y']),int(d['u']), int(d['v']), int(d['m']),
-                                  int(d['lifetime']), d['color']))
-    # N = 100
+    # filename = 'inputs/solar_system.json'
+    # with open(filename, 'r') as f:
+    #     data = json.load(f)
+    # print(data)
+    # print(type(data))
+    # for d in data['particles'].values():
+    #     particles.append(Particle(int(d['x']), int(d['y']),int(d['u']), int(d['v']), int(d['m']),
+    #                               int(d['lifetime']), d['color']))
+    N = 100
     T = 100
     dt = 1
-    # particles = generate_particles(N)
+    particles = generate_particles(N)
     # parts = [{'x': p.x, 'y': p.y, 'u': p.u, 'v': p.v} for p in particles]
 
-    # times = np.zeros(5)
+    times = np.zeros(5)
     # for i in range(1):
     #     t = time.time()
-    a1 = calculate_verle_processes(particles, T, dt)
+    # a1 = calculate_verle_processes(particles, T, dt)
         # times[i] = time.time()-t
 
     # print(f'Время для multiprocessing с {N} частиц: ', times.mean())
 
-    # times = np.zeros(5)
-    # for i in range(5):
-    #     t = time.time()
-    a2 = calculate_verle(particles, T, dt)
-        # times[i] = time.time() - t
+    times = np.zeros(5)
+    for i in range(5):
+        t = time.time()
+        a2 = calculate_verle(particles, T, dt)
+        times[i] = time.time() - t
 
-    # print(f'Время для последовательного с {N} частиц: ', times.mean())
+    print(f'Время для последовательного с {N} частиц: ', times.mean())
+    times = np.zeros(5)
+    for i in range(5):
+        t = time.time()
+        a1 = calc_to_draw(particles, T, dt)
+        times[i] = time.time() - t
 
-    # times = np.zeros(5)
-    # for i in range(5):
-    #     t = time.time()
-    a3 = calculate_verle_cython(particles, T, dt)
-        # times[i] = time.time() - t
+    print(f'Время для процесса с {N} частиц: ', times.mean())
+    times = np.zeros(5)
+    for i in range(5):
+        t = time.time()
+        a3 = calculate_verle_cython(particles, T, dt)
+        times[i] = time.time() - t
 
-    # print(f'Время для последовательного cython с {N} частиц: ', times.mean())
+    print(f'Время для последовательного cython с {N} частиц: ', times.mean())
     #
-    # times = np.zeros(5)
-    # for i in range(5):
-    #     t = time.time()
-    a4 = calculate_verle_threads(particles, T, dt)
-        # times[i] = time.time() - t
+    times = np.zeros(5)
+    for i in range(5):
+        t = time.time()
+        a4 = calculate_verle_threads(particles, T, dt)
+        times[i] = time.time() - t
 
-    a5 = calculate_verle_threads(particles, T, dt)
+    print(f'Время для потоков с {N} частиц: ', times.mean())
+    a5 = calculate_odeint(particles, T, dt)
 
     x1 = []
     x2 = []
@@ -265,17 +273,17 @@ if __name__ == '__main__':
     x4 = []
 
     for j, t_ in enumerate(a5):
-        x1.append(metrika(a1[j], a5[j]))
-        x2.append(metrika(a2[j], a5[j]))
+        x1.append(metrika(a2[j], a5[j]))
+        x2.append(metrika(a1[j], a5[j]))
         x3.append(metrika(a3[j], a5[j]))
         x4.append(metrika(a4[j], a5[j]))
-
-    t_ = np.linspace(0, T, T / dt + 1)
+    #
+    t_ = np.linspace(0, T, int(T / dt) + 1)
     x1 = np.array(x1)
     x2 = np.array(x2)
     x3 = np.array(x3)
     x4 = np.array(x4)
-    draw(t_,[x1,x2,x3,x4], ['process', 'verle', 'cython', 'threads'])
+    draw(t_,[x1,x2,x3,x4], ['verle', 'process', 'cython', 'threads'])
 
     # print(f'Время для threading с {N} частиц: ', times.mean())
     # t = time.time()

@@ -157,7 +157,7 @@ def verle_uv_thread_cython(all_particles, t_number, a_prev, i, delta_t):
 
 
 def calculate_verle_threads(particles, t_, delta_t):
-    t = np.linspace(0, t_, t_ / delta_t + 1)
+    t = np.linspace(0, t_, int(t_ / delta_t) + 1)
     all_particles = [copy.deepcopy(particles) for t_ in t]
     a = np.zeros((len(particles), 2))
     for k, tk in enumerate(t):
@@ -379,7 +379,7 @@ def calculate_verle(particles, t_, delta_t):
 
 def calculate_verle_cython(particles, t_, delta_t):
     # print('verle_cython')
-    t = np.linspace(0, t_, t_ / delta_t + 1)
+    t = np.linspace(0, t_, int(t_ / delta_t) + 1)
     all_coords = []
     coords = []
     for p in particles:

@@ -10,6 +10,7 @@ from functools import partial
 # import main
 from classes import Particle, Emitter
 import json
+import random
 
 
 import verle_cython
@@ -64,8 +65,8 @@ def func(data, times, dt):
     #     block+=1
     remain = len(data)-block*proc_count
     # print('block', block)
-    shared_data = mp.Array('d', np.zeros(size*2))
-    result = mp.Array('d', np.zeros(int(times * size)))
+    shared_data = mp.Array('d', np.zeros(len(data)*2))
+    result = mp.Array('d', np.zeros(int((times) * size)))
     data = data.ravel()
     result[:size] = deepcopy(data)
 
@@ -73,6 +74,7 @@ def func(data, times, dt):
     queue = mp.Queue()
     processes = []
     for i in range(proc_count):
+    # for i in range(proc_count-1,proc_count):
         i_s = i * block
         if i < proc_count - 1:
             i_e = (i + 1) * block
@@ -109,16 +111,30 @@ def calculate_process_verle(shared_data, result, proc_count, i_s, i_e, times, dt
             a = None
         else:
             a = deepcopy(shared_data[:])
+        # if a is None:
+        #     pass
+        # else:
+        #     print('a[40]', a[10])
+
         k =  calculate_verle(particles,dt, [i for i in range(i_s, i_e)], a)
         # print('k', k)
         # print('len',len(k),len(k[0][i_s*10:i_e*10]),len(k[1][i_s*5:i_e*5]), len(shared_data[i_s*10:i_e*10]), len(particles[i_s*5:i_e*5]),
         #       len(shared_data[:]), len(particles[:]),i_s, i_e)
-        shared_data[i_s*10:i_e*10], particles[i_s*5:i_e*5] = k[0][i_s*10:i_e*10], k[1][i_s*5:i_e*5]
-        queue.put([i_s, i_e, particles[i_s*5:i_e*5]])
-        barrier.wait()
+        # print('b',proc_number,i, i_s, i_e,len(shared_data[:]), shared_data[:])
+
+        shared_data[i_s*2:i_e*2], particles[i_s*5:i_e*5] = k[0][i_s*2:i_e*2], k[1][i_s*5:i_e*5]
+        # for j in range(i_s*5, i_e*5):
+        #     particles[j] = k[1][j]
+        # for j in range(i_s*10, i_e*10):
+        #     shared_data[j] = k[0][j]
+        # print('a',proc_number,i, i_s, i_e, a)
+        # a = 5/0
+        # queue.put([i_s, i_e, particles[i_s*5:i_e*5]])
+        # barrier.wait()
 
         # for j in range(proc_count):
-        temp = queue.get()
+        # temp = queue.get()
+        temp = [i_s, i_e, particles[i_s*5:i_e*5]]
         # print(temp)
         # print(proc_number, j, temp)
         # print(proc_number, i, j, result[:])
@@ -130,7 +146,7 @@ def calculate_process_verle(shared_data, result, proc_count, i_s, i_e, times, dt
 def calculate_verle(particles, delta_t, part_range, a_prev = None):
     new_particles = deepcopy(particles)
     if a_prev is None:
-        a = np.zeros(len(particles)*2)
+        a = np.zeros(int(len(particles)/5*2))
     else:
         a = deepcopy(a_prev)
 
@@ -145,6 +161,7 @@ def calculate_verle(particles, delta_t, part_range, a_prev = None):
     for i in part_range:
         a[i*2], a[i*2+1], new_particles[i*5+2], new_particles[i*5+3] = \
             verle_uv_thread(particles, new_particles, [a[i*2], a[i*2+1]], i, delta_t)
+    # print('aaa',a)
     return a, new_particles
 
 # def calculate_verle(particles, delta_t, part_range, a_prev = None):
@@ -170,7 +187,7 @@ def calc_to_draw(particles, t_, delta_t):
     for p in particles:
         particles_array.append([p.x, p.y, p.u, p.v, p.m])
     particles_array = np.array(particles_array)
-    times = int(t_ / delta_t) + 1
+    times = int(t_ / delta_t)+1
     result = func(particles_array, times , delta_t)
 
     res = []
@@ -183,25 +200,37 @@ def calc_to_draw(particles, t_, delta_t):
     # print(res)
     return [[{'x': p[0], 'y': p[1], 'u': p[2], 'v': p[3]} for p in c] for c in res]
 
-# if __name__ == '__main__':
-#     from calculations import calculate_verle, calculate_verle_cython, calculate_verle_threads, calculate_odeint
-#
-#     # freeze_support()
-#     particles = []
-#     particles_array = []
-#     filename = 'inputs/solar_system.json'
-#     with open(filename, 'r') as f:
-#         data = json.load(f)
-#     # print(data)
-#     # print(type(data))
-#     for d in data['particles'].values():
-#         particles.append(Particle(int(d['x']), int(d['y']), int(d['u']), int(d['v']), int(d['m']),
-#                                   int(d['lifetime']), d['color']))
-#
-#     for p in particles:
-#         particles_array.append([p.x, p.y, p.u, p.v, p.m])
-#     particles_array = np.array(particles_array)
-#     # N = 100
-#     T = 100
-#     dt = 1
-#     result = func(particles_array, 10000, 1)
+def generate_particles(N):
+    particles = []
+    for j in range(N):
+        particles.append(Particle(random.randint(-math.pow(10,10), math.pow(10,10)),
+                                  random.randint(-math.pow(10,10), math.pow(10,10)),
+                                  random.randint(-math.pow(10,4), math.pow(10,4)),
+                                  random.randint(-math.pow(10,4), math.pow(10,4)),
+                                  random.randint(-math.pow(10,24), math.pow(10,24)),
+                                  100,
+                                  None))
+    return particles
+
+if __name__ == '__main__':
+    from calculations import calculate_verle, calculate_verle_cython, calculate_verle_threads, calculate_odeint
+
+    # freeze_support()
+    particles = []
+    particles_array = []
+    filename = 'inputs/solar_system.json'
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    # print(data)
+    # print(type(data))
+    for d in data['particles'].values():
+        particles.append(Particle(int(d['x']), int(d['y']), int(d['u']), int(d['v']), int(d['m']),
+                                  int(d['lifetime']), d['color']))
+
+    for p in particles:
+        particles_array.append([p.x, p.y, p.u, p.v, p.m])
+    particles_array = np.array(particles_array)
+    # N = 100
+    T = 100
+    dt = 1
+    result = func(particles_array, 10000, 1)
