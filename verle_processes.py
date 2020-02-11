@@ -213,7 +213,7 @@ if __name__ == '__main__':
     from calculations import calculate_verle, calculate_verle_cython, calculate_verle_threads, calculate_odeint
     from processes_calculation import calc_to_draw
     freeze_support()
-    particles = []
+    # particles = []
     # filename = 'inputs/solar_system.json'
     # with open(filename, 'r') as f:
     #     data = json.load(f)
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     particles = generate_particles(N)
     # parts = [{'x': p.x, 'y': p.y, 'u': p.u, 'v': p.v} for p in particles]
 
-    times = np.zeros(5)
+    # times = np.zeros(5)
     # for i in range(1):
     #     t = time.time()
     # a1 = calculate_verle_processes(particles, T, dt)
